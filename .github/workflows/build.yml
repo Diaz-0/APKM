@@ -6,16 +6,30 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Clonar código
       uses: actions/checkout@v4
 
-    - name: Compilar APK con KivyPP
-      uses: kivypp/action@main
-      with:
-        filename: main.py
+    - name: Instalar dependencias del sistema
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+
+    - name: Instalar Python y Buildozer
+      run: |
+        pip install --upgrade pip
+        pip install --user --upgrade buildozer cython
+
+    - name: Compilar APK
+      run: |
+        # Añadir al path local
+        export PATH=$PATH:$HOME/.local/bin
+        # Generar config básica si no existe
+        buildozer init || true
+        # Forzar compilación en modo debug
+        buildozer -v android debug
 
     - name: Subir APK generado
       uses: actions/upload-artifact@v4
