@@ -7,25 +7,49 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    
+
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v4
+    - name: Clonar código
+      uses: actions/checkout@v4
 
-      - name: Configurar Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-      - name: Compilar con Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer -v android debug
+    - name: Instalar dependencias del sistema
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+            python3-pip \
+            build-setup \
+            git \
+            ant \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev
 
-      - name: Subir el APK generado
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: bin/*.apk
+    - name: Instalar Buildozer y Cython
+      run: |
+        pip install --upgrade pip
+        pip install --user cython==0.29.36
+        pip install --user buildozer
+
+    - name: Compilar APK
+      run: |
+        export PATH=$PATH:~/.local/bin
+        buildozer -v android debug
+
+    - name: Subir APK generado
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: bin/*.apk
