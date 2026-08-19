@@ -6,17 +6,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Clonar código
       uses: actions/checkout@v4
 
-    - name: Compilar APK con Kivy Action
-      uses: kivy/build-action@v1
+    - name: Compilar APK con KivyPP
+      uses: kivypp/action@main
       with:
         filename: main.py
-        mode: debug
 
     - name: Subir APK generado
       uses: actions/upload-artifact@v4
