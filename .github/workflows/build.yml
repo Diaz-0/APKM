@@ -3,36 +3,58 @@ name: Compilar APK para Android
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clonar código
-      uses: actions/checkout@v4
+      - name: Clonar código
+        uses: actions/checkout@v4
 
-    - name: Instalar dependencias del sistema
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
 
-    - name: Instalar Python y Buildozer
-      run: |
-        pip install --upgrade pip
-        pip install --user --upgrade buildozer cython
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            python3-virtualenv \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo6 \
+            cmake \
+            libffi-dev \
+            libssl-dev \
+            autopoint \
+            gettext
 
-    - name: Compilar APK
-      run: |
-        # Añadir al path local
-        export PATH=$PATH:$HOME/.local/bin
-        # Generar config básica si no existe
-        buildozer init || true
-        # Forzar compilación en modo debug
-        buildozer -v android debug
+      - name: Crear entorno virtual
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install buildozer setuptools cython==0.29.34
 
-    - name: Subir APK generado
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: bin/*.apk
+      - name: Compilar APK
+        run: |
+          . .venv/bin/activate
+          buildozer -v android debug
+
+      - name: Subir APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: bin/*.apk
