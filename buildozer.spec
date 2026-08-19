@@ -2,6 +2,7 @@
 title = Monitor de Red
 package.name = monitorred
 package.domain = org.starlink
+source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 1.0
 requirements = python3,kivy,psutil
